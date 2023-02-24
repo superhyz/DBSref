@@ -1,0 +1,109 @@
+import React from 'react';
+
+function CheckoutCart(props) {
+  return (
+    <div>
+      <h2>Checkout Cart</h2>
+      <ul>
+        {props.cart.map(item => (
+          <li key={item.id}>
+            {item.name}: ${item.price}
+          </li>
+        ))}
+      </ul>
+      <p>Total: ${props.total}</p>
+      <button onClick={props.onCheckout}>Checkout</button>
+    </div>
+  );
+}
+
+export default CheckoutCart;
+
+import React, { useState } from 'react';
+import CheckoutCart from './CheckoutCart';
+
+function CartPage() {
+  const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  const handleCheckout = async () => {
+    try {
+      // Make API call to backend to process order
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cart),
+      });
+      const data = await response.json();
+      console.log('Order processed:', data);
+
+      // Reset cart and total state
+      setCart([]);
+      setTotal(0);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>My Cart</h1>
+      <CheckoutCart cart={cart} total={total} onCheckout={handleCheckout} />
+    </div>
+  );
+}
+
+export default CartPage;
+
+const mongoose = require('mongoose');
+
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+});
+
+module.exports = mongoose.model('Product', productSchema);
+
+const express = require('express');
+const router = express.Router();
+const Product = require('../models/product');
+
+router.post('/checkout', async (req, res) => {
+  try {
+    const products = req.body;
+
+    // Calculate total price of order
+    const total = products.reduce((acc, product) => acc + product.price, 0);
+
+    // Insert order into database
+    await Product.insertMany(products);
+
+    // Send response with order total
+    res.json({ total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
+
+const express = require('express');
+const mongoose = require('mongoose');
+const apiRouter = require('./routes/api');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp';
+
+// Middleware
+app.use(express.json());
+app.use('/api', apiRouter);
+
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true,
+}).then(() => {
