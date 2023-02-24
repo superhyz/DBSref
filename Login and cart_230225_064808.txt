@@ -1,0 +1,265 @@
+npx create-react-app ecommerce
+
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [cartItems, setCartItems] = useState([]);
+
+  const addToCart = (item) => {
+    const itemIndex = cartItems.findIndex(i => i.id === item.id);
+    if (itemIndex > -1) {
+      const newCartItems = [...cartItems];
+      newCartItems[itemIndex].quantity += item.quantity;
+      setCartItems(newCartItems);
+    } else {
+      setCartItems([...cartItems, item]);
+    }
+  };
+
+  const removeFromCart = (itemId) => {
+    setCartItems(cartItems.filter(item => item.id !== itemId));
+  };
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Ecommerce Website</h1>
+      </header>
+      <main className="App-main">
+        <div className="product-list">
+          <div className="product">
+            <h2>Product 1</h2>
+            <img src="https://via.placeholder.com/150" alt="Product 1" />
+            <p>Price: $10</p>
+            <button onClick={() => addToCart({ id: 1, name: 'Product 1', price: 10, quantity: 1 })}>Add to Cart</button>
+          </div>
+          <div className="product">
+            <h2>Product 2</h2>
+            <img src="https://via.placeholder.com/150" alt="Product 2" />
+            <p>Price: $20</p>
+            <button onClick={() => addToCart({ id: 2, name: 'Product 2', price: 20, quantity: 1 })}>Add to Cart</button>
+          </div>
+          <div className="product">
+            <h2>Product 3</h2>
+            <img src="https://via.placeholder.com/150" alt="Product 3" />
+            <p>Price: $30</p>
+            <button onClick={() => addToCart({ id: 3, name: 'Product 3', price: 30, quantity: 1 })}>Add to Cart</button>
+          </div>
+        </div>
+        <div className="cart">
+          <h2>Cart</h2>
+          {cartItems.length === 0 ? <p>Your cart is empty</p> :
+            <>
+              {cartItems.map(item => (
+                <div key={item.id} className="cart-item">
+                  <p>{item.name} x {item.quantity}</p>
+                  <p>${item.price * item.quantity}</p>
+                  <button onClick={() => removeFromCart(item.id)}>Remove</button>
+                </div>
+              ))}
+              <p>Total: ${cartItems.reduce((total, item) => total + item.price * item.quantity, 0)}</p>
+            </>
+          }
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default App;
+
+Css file
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 10vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-main {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-around;
+  margin: 2rem 0;
+}
+
+.product-list {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-around;
+  width: 50%;
+}
+
+.product {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.product img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.cart {
+  width: 30%;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.cart h2 {
+  margin-bottom: 1rem;
+}
+
+.cart-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.cart-item button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.cart-item button:hover {
+  background-color: #c82333;
+}
+
+@media screen and (max-width: 768px) {
+  .App-main {
+    flex-direction: column;
+  }
+
+  .product-list {
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .product {
+    width: 100%;
+  }
+
+  .cart {
+    width: 100%;
+  }
+}
+
+Login form
+
+import React, { useState } from "react";
+import axios from "axios";
+
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+  };
+
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post("/api/login", {
+        email,
+        password,
+      });
+
+      // login successful, do something here
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && <p>{error}</p>}
+      <label>
+        Email:
+        <input type="email" value={email} onChange={handleEmailChange} />
+      </label>
+      <label>
+        Password:
+        <input type="password" value={password} onChange={handlePasswordChange} />
+      </label>
+      <button type="submit">Log In</button>
+    </form>
+  );
+}
+
+export default LoginForm;
+
+Css
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+button[type="submit"] {
+  background-color: #0077cc;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button[type="submit"]:hover {
+  background-color: #005ea3;
+}

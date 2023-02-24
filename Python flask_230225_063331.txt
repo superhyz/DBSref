@@ -1,0 +1,98 @@
+pip install flask sqlalchemy
+
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
+db = SQLAlchemy(app)
+
+class Book(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120))
+    author = db.Column(db.String(120))
+
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+@app.route('/books', methods=['GET'])
+def get_books():
+    books = Book.query.all()
+    return jsonify([{'id': b.id, 'title': b.title, 'author': b.author} for b in books])
+
+@app.route('/books', methods=['POST'])
+def add_book():
+    title = request.json.get('title')
+    author = request.json.get('author')
+    book = Book(title=title, author=author)
+    db.session.add(book)
+    db.session.commit()
+    return jsonify({'id': book.id, 'title': book.title, 'author': book.author})
+
+@app.route('/books/<int:book_id>', methods=['GET'])
+def get_book(book_id):
+    book = Book.query.filter_by(id=book_id).first()
+    if not book:
+        return jsonify({'error': 'Book not found'})
+    return jsonify({'id': book.id, 'title': book.title, 'author': book.author})
+
+@app.route('/books/<int:book_id>', methods=['PUT'])
+def update_book(book_id):
+    book = Book.query.filter_by(id=book_id).first()
+    if not book:
+        return jsonify({'error': 'Book not found'})
+    title = request.json.get('title', book.title)
+    author = request.json.get('author', book.author)
+    book.title = title
+    book.author = author
+    db.session.commit()
+    return jsonify({'id': book.id, 'title': book.title, 'author': book.author})
+
+@app.route('/books/<int:book_id>', methods=['DELETE'])
+def delete_book(book_id):
+    book = Book.query.filter_by(id=book_id).first()
+    if not book:
+        return jsonify({'error': 'Book not found'})
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({'message': 'Book deleted successfully'})
+
+pip install flask flask_jwt_extended flask_bcrypt
+
+from flask import Flask, jsonify, request
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies
+
+app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this to a random secret key
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
+
+users = {
+    'user1': {'password': bcrypt.generate_password_hash('password1').decode('utf-8')},
+    'user2': {'password': bcrypt.generate_password_hash('password2').decode('utf-8')},
+    # Add more users as needed
+}
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
+
+    if username not in users or not bcrypt.check_password_hash(users[username]['password'], password):
+        return jsonify({'error': 'Invalid username or password'}), 401
+
+    access_token = create_access_token(identity=username)
+    response = jsonify({'login': True})
+    response.set_cookie('access_token', access_token)
+    return response
+
+@app.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    response = jsonify({'logout': True})
+    unset_jwt_cookies(response)
+    return response
