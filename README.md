@@ -12,7 +12,17 @@ Figma (Wireframe) https://www.figma.com/file/XaCy3xGz6b9hGAxvKPGPzr/Untitled?t=b
 
 Backend:
 
-mongodb url const CONNECTION_URL = 'mongodb+srv://hackathon:hackathon123@cluster0.aerev.mongodb.net/mainDB';
+mongodb url const CONNECTION_URL = 'mongodb+srv://admin1:<password>@cluster0.zdkkgjp.mongodb.net/test';
+
+<password>  replace with admin1
+
+
 Setup: (For reference code)
 
+
+
 run npm i && npm start for both client and server side to start the app
+
+
+<img width="591" alt="image" src="https://user-images.githubusercontent.com/56131537/221211512-a9e2b682-3d31-4a19-b834-acc07343b9d6.png">
+
