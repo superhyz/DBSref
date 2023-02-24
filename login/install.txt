@@ -1,0 +1,17 @@
+server
+npm init
+npm install express
+npm install nodemon
+add "dev" : "nodemon index.js" under scripts
+npm install cors
+npm install jwt-decode //to deal with webpack5 error
+
+import jwt from "jwt-decode"
+
+npx dev 
+npm run dev
+
+client
+npm creatre-react-app client
+npm install axios
+npm install react-router-dom
